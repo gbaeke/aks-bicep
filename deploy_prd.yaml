@@ -1,0 +1,25 @@
+trigger: none
+
+name: deploy_prd
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: AKS_Bicep # group contains SSH_KEY
+  - name: location
+    value: 'westeurope'  # location for the resource group; Bicep will use resourceGroup().location
+  - name: connection
+    value: 'AKSBicep'  # name of the service connection
+  
+  
+
+jobs:
+  - job: aks_prd_with_bicep
+    displayName: 'Deploying aks-prd with Bicep'
+    variables:
+      resourceGroup: rg-aks-prd     # resource group to deploy to
+      parametersFile: '@./bicep/parameters_prd.json'
+    steps:
+      - template: ./common/deploy-aks-compile.yaml
+  

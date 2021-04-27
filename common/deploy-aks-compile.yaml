@@ -1,0 +1,28 @@
+steps:
+  - checkout: self
+  - task: AzureCLI@2
+    displayName: "Build Bicep template"
+    inputs:
+      azureSubscription: $(connection)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        az bicep build --file ./bicep/main.bicep
+  - task: AzureCLI@2    # Azure CLI can deploy bicep files directly
+    displayName: "Deploy Bicep template"
+    inputs:
+      azureSubscription: $(connection)    # service connection
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        export ACR_ROLE=$(az role definition list --name 'AcrPull' | jq -r .[].id)
+        az group create --name $(resourceGroup) --location $(location)
+        az deployment group create \
+          --resource-group $(resourceGroup) \
+          --template-file ./bicep/main.bicep \
+          --parameters $(parametersFile) \
+          --parameters acrRole=$ACR_ROLE \
+          --parameters adminPublicKey="$(SSH_KEY)"
+
+
+

@@ -1,0 +1,55 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"k8sVersion": {
+			"value": "1.19.7"
+		},
+		"adminGroupObjectIDs": {
+			"value": [
+				"3d652653-d3fa-4855-b8fe-468e2be3bb50"
+			]
+		},
+		"prefix" : {
+			"value": "geba"
+		},
+		"suffix" : {
+			"value": "prd"
+		},
+		"aksNodes" : {
+			"value": 2
+		},
+		"vnetPrefix": {
+			"value": "10.20.0.0/16"
+		},
+		"subnetPrefix": {
+			"value": "10.20.0.0/24"
+		},
+		"vnetName": {
+			"value": ""
+		},
+		"aksSubnets": {
+			"value": [
+				{
+					"name": "snet-aks",
+					"properties": {
+						"addressPrefix": "10.20.0.0/24"
+					}
+				},
+				{
+					"name": "snet-ilb",
+					"properties": {
+						"addressPrefix": "10.20.1.0/24"
+					}
+				}
+			]
+		},
+		"aksSubnetName": {
+			"value": "snet-aks"
+		},
+		"aksSkuTier": {
+			"value": "Paid"
+		}
+
+	}
+  }

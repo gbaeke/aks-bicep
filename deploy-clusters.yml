@@ -1,0 +1,41 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: AKS_Bicep # group contains SSH_KEY and ACR_ROLE
+  - name: location
+    value: 'westeurope'  # location for the resource group; Bicep will use resourceGroup().location
+  - name: connection
+    value: 'AKSBicep'  # name of the service connection
+  
+  
+stages:
+  - stage: deploy_dev
+    jobs:
+      - deployment: aks_dev_with_bicep
+        displayName: 'Deploying aks-dev with Bicep'
+        environment: aks-dev  # we created this environment beforehand although that is optional
+        variables:
+          resourceGroup: rg-aks-dev     # resource group to deploy to
+          parametersFile: '@./bicep/parameters_dev.json'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./common/deploy-aks-compile.yaml
+  - stage: deploy_prd
+    jobs:
+      - deployment: aks_prd_with_bicep
+        displayName: 'Deploying aks-prd with Bicep'
+        environment: aks-prd  # we created this environment beforehand although that is optional
+        variables:
+          resourceGroup: rg-aks-prd     # resource group to deploy to
+          parametersFile: '@./bicep/parameters_prd.json'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: ./common/deploy-aks-compile.yaml
