@@ -1,0 +1,24 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"k8sVersion": {
+			"value": "1.19.7"
+		},
+		"adminGroupObjectIDs": {
+			"value": [
+				"3d652653-d3fa-4855-b8fe-468e2be3bb50"
+			]
+		},
+		"aksNodes" : {
+			"value": 1
+		},
+		"aksSkuTier": {
+			"value": "Free"
+		},
+		"adminPublicKey":{
+			"value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDF0Lgarid/UrnVFpMQxAUFGbwed1wQN02lrTGqWp9vyo0H8vzgYL3mnEh27S/ZYXQnp+Ibmi8+yaQAVhPFrSXAf5LH40vN4irwWCDeunDXQCmjy4u58uTE260fc3pGFLixn7J4Ri3BPIL8lB9zptCiMFNWCM+iUqFqtAptc7PURGQyrgnXwTnkrlzpOgMfu/rZPYcfEirm31Uy71KHudNJY/+rME8xCA0Mpv9L03kHBRdK8xnboKsMLiWyQUQowhyStIzfe55bl0ZOMxhW02A9cQ6wENBYydia6/vNPbSrjeED81MSDizcbQV6tZQhDya2D1nw8XFIcvQ3wjUIy7FpHWcyk4cDlxrw1sT7juVmRY+A+BIsq9o4Wh2pTNpROURbpmu9D9GukkxAx4f7jjDVgFPnbvm8K/bWD52+FftQy4595Hyf8Inifxjz1pjIK9OQS8WSy0OWHtJQbjGaNdop0YewLa16Bo4fo/sHM+k+X6B09eGsj0h9ruS6bBEdWh0= codespace@codespaces_a10bc0"
+		}
+
+	}
+  }

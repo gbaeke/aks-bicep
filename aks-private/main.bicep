@@ -17,11 +17,14 @@ param mgmtSubnetPrefix string = '10.50.5.0/24'
 param bastionName string = 'aks-bastion'
 
 // jumpbox parameters
+param vmName string = 'aks-vm'
+@secure()
 param adminPassword string
 
 
 // aks parameters
-/* param k8sVersion string = '1.19.7'
+param aksClusterName string = 'aks-cluster'
+param k8sVersion string = '1.19.7'
 param adminUsername string = 'azureuser'
 param adminPublicKey string
 param adminGroupObjectIDs array = []
@@ -31,18 +34,99 @@ param adminGroupObjectIDs array = []
 ])
 param aksSkuTier string = 'Free'
 param aksVmSize string = 'Standard_D2s_v3'
-param aksSubnets array = []
-param aksSubnetName string = 'snet-aks'
-param aksNodes int */
+param aksNodes int = 1
 
-/* @allowed([
+@allowed([
   'azure'
   'calico'
 ])
 param aksNetworkPolicy string = 'calico'
 
+// fw parameters
+param fwName string = 'aks-fw'
+var applicationRuleCollections = [
+  {
+    name: 'aksFirewallRules'
+    properties: {
+      priority: 100
+      action: {
+        type: 'allow'
+      }
+      rules: [
+        {
+          name: 'aksFirewallRules'
+          description: 'Rules needed for AKS to operate'
+          sourceAddresses: [
+            aksSubnetPrefix
+          ]
+          protocols: [
+            {
+              protocolType: 'Https'
+              port: 443
+            }
+            {
+              protocolType: 'Http'
+              port: 80
+            }
+          ]
+          targetFqdns: [
+            '*.hcp.${rg.location}.azmk8s.io'
+            'mcr.microsoft.com'
+            '*.cdn.mcr.io'
+            '*.data.mcr.microsoft.com'
+            'management.azure.com'
+            'login.microsoftonline.com'
+            'dc.services.visualstudio.com'
+            '*.ods.opinsights.azure.com'
+            '*.oms.opinsights.azure.com'
+            '*.monitoring.azure.com'
+            'packages.microsoft.com'
+            'acs-mirror.azureedge.net'
+            'azure.archive.ubuntu.com'
+            'security.ubuntu.com'
+            'changelogs.ubuntu.com'
+            'launchpad.net'
+            'ppa.launchpad.net'
+            'keyserver.ubuntu.com'
+          ]
+        }
+      ]
+    }
+  }
+]
+
+var networkRuleCollections = [
+  {
+    name: 'ntpRule'
+    properties: {
+      priority: 100
+      action: {
+        type: 'allow'
+      }
+      rules: [
+        {
+          name: 'ntpRule'
+          description: 'Allow Ubuntu NTP for AKS'
+          protocols: [
+            'UDP'
+          ]
+          sourceAddresses: [
+            aksSubnetPrefix
+          ]
+          destinationAddresses: [
+            '*'
+          ]
+          destinationPorts: [
+            '123'
+          ]
+        }
+      ]
+    }
+  }
+]
+
 // acr parameters
-@allowed([
+/* @allowed([
   'Basic'
   'Standard'
   'Premium'
@@ -77,5 +161,65 @@ module bastion 'modules/bastion.bicep' = {
   params: {
     bastionName: bastionName
     subnetId: vnet.outputs.bastionSubnetId
+  }
+}
+
+module vm 'modules/jump-box.bicep' = {
+  name: vmName
+  scope: rg
+  params:{
+    vmName: vmName
+    subnetId: vnet.outputs.mgmtSubnetId
+    adminPassword: adminPassword
+  }
+}
+
+module fw 'modules/azfw.bicep' = {
+  name: fwName
+  scope: rg
+  params: {
+    fwName: fwName
+    fwSubnetId: vnet.outputs.fwSubnetId
+    applicationRuleCollections: applicationRuleCollections
+    networkRuleCollections: networkRuleCollections
+  }
+}
+
+module aks 'modules/aks-cluster.bicep' = {
+  name: aksClusterName
+  scope: rg
+  params: {    
+    aksClusterName: aksClusterName
+    subnetId: vnet.outputs.aksSubnetId
+    adminPublicKey: adminPublicKey
+
+    aksSettings: {
+      clusterName: aksClusterName
+      identity: 'SystemAssigned'
+      kubernetesVersion: k8sVersion
+      networkPlugin: 'azure'
+      networkPolicy: aksNetworkPolicy
+      serviceCidr: '172.16.0.0/22' // can be reused in multiple clusters; no overlap with other IP ranges
+      dnsServiceIP: '172.16.0.10'
+      dockerBridgeCidr: '172.16.4.1/22'
+      outboundType: 'loadBalancer'
+      loadBalancerSku: 'standard'
+      sku_tier: aksSkuTier			
+      enableRBAC: true 
+      aadProfileManaged: true
+      adminGroupObjectIDs: adminGroupObjectIDs 
+    }
+
+    defaultNodePool: {
+      name: 'pool01'
+      count: aksNodes
+      vmSize: aksVmSize
+      osDiskSizeGB: 50
+      osDiskType: 'Ephemeral'
+      vnetSubnetID: vnet.outputs.aksSubnetId
+      osType: 'Linux'
+      type: 'VirtualMachineScaleSets'
+      mode: 'System'
+    }    
   }
 }

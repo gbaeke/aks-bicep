@@ -6,29 +6,25 @@ param bastionSubnetPrefix string
 param fwSubnetPrefix string
 param mgmtSubnetPrefix string
 
+resource aksRouteTable 'Microsoft.Network/routeTables@2020-07-01' = {
+  name: 'aksRouteTable'
+  location: resourceGroup().location
+  properties: {
+    routes: [
+      {
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: '10.50.4.4'
+        }
+        name: 'defaultRoute'
+      }
+    ]
+    disableBgpRoutePropagation: true
 
-var subnets = [
-  {
-    name: 'aks'
-    addressPrefix: aksSubnetPrefix
   }
-  {
-    name: 'ilb'
-    addressPrefix: ilbSubnetPrefix
-  }
-  {
-    name: 'AzureBastionSubnet'
-    addressPrefix: bastionSubnetPrefix
-  }
-  {
-    name: 'AzureFirewallSubnet'
-    addressPrefix: fwSubnetPrefix
-  }
-  {
-    name: 'mgmt'
-    addressPrefix: mgmtSubnetPrefix
-  }  
-]
+}
+
 
 resource vnet 'Microsoft.Network/virtualNetworks@2020-11-01' = {
   name: vnetName
@@ -39,14 +35,49 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-11-01' = {
         vnetPrefix
       ]
     }
-    subnets: [for subnet in subnets: {
-      name: subnet.name
+    subnets:[
+      {
+        name: 'aks'
         properties:{
-          addressPrefix: subnet.addressPrefix
+          addressPrefix: aksSubnetPrefix
+          routeTable:{
+            id: aksRouteTable.id
+          }
+          privateEndpointNetworkPolicies: 'Disabled'
         }
-    }]
+      }
+      {
+        name: 'ilb'
+        properties:{
+          addressPrefix: ilbSubnetPrefix
+        }
+      }
+      {
+        name: 'AzureBastionSubnet'
+        properties:{
+          addressPrefix: bastionSubnetPrefix
+        }
+      }
+      {
+        name: 'AzureFirewallSubnet'
+        properties:{
+          addressPrefix: fwSubnetPrefix
+        }
+      }
+      {
+        name: 'mgmt'
+        properties:{
+          addressPrefix: mgmtSubnetPrefix
+        }
+      }
+    ]
+    
   }
 }
 
+    
+
 output bastionSubnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, 'AzureBastionSubnet')
 output mgmtSubnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, 'mgmt')
+output aksSubnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, 'aks')
+output fwSubnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, 'AzureFirewallSubnet')
