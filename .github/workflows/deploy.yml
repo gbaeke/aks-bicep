@@ -23,7 +23,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy Bicep
+      - name: Deploy Private AKS with Bicep
         uses: Azure/cli@1.0.4
         with:
           inlineScript: |
