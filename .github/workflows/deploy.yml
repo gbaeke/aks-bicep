@@ -7,8 +7,6 @@ on:
     
 
 env:
-  CLUSTER_NAME: aks-cluster
-  RESOURCE_GROUP: aks-rg
   LOCATION: westeurope
 
 
