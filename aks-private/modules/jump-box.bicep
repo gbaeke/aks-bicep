@@ -1,7 +1,22 @@
 param vmName string
 param adminPassword string
 param subnetId string
-param cloudInit string = '#cloud-config\n\nruncmd:\n - curl -sL https://aka.ms/InstallAzureCLIDeb | bash\n\nfinal_message: "cloud init was here\n"'
+param cloudInit string = '''
+#cloud-config
+
+packages:
+ - build-essential
+ - procps
+ - file
+ - linuxbrew-wrapper
+
+runcmd:
+ - curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+ - az aks install-cli
+ 
+final_message: "cloud init was here"
+
+'''
 
 resource nic 'Microsoft.Network/networkInterfaces@2020-11-01' = {
   name: '${vmName}-nic'

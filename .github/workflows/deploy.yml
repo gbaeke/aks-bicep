@@ -1,0 +1,32 @@
+name: deploy
+
+on:
+  repository_dispatch:
+    types: [deploy]
+  workflow_dispatch:
+    
+
+env:
+  CLUSTER_NAME: aks-cluster
+  RESOURCE_GROUP: aks-rg
+  LOCATION: westeurope
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy Bicep
+        uses: Azure/cli@1.0.4
+        with:
+          inlineScript: |
+            az deployment sub create --location $LOCATION --template-file $GITHUB_WORKSPACE/aks-private/main.bicep \
+              --parameter @$GITHUB_WORKSPACE/aks-private/parameters.json --parameter adminPassword=${{ secrets.VM_PASSWORD }}
+        
