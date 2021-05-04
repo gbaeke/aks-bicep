@@ -21,10 +21,21 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Run What-If for Private AKS
+        uses: Azure/cli@1.0.4
+        with:
+          inlineScript: |
+            export ACR_ROLE=$(az role definition list --name 'AcrPull' | jq -r .[].id)
+            az deployment sub what-if --location $LOCATION --template-file $GITHUB_WORKSPACE/aks-private/main.bicep \
+              --parameter @$GITHUB_WORKSPACE/aks-private/parameters.json --parameter adminPassword=${{ secrets.VM_PASSWORD }} \
+              --parameter acrRole=$ACR_ROLE
+
       - name: Deploy Private AKS with Bicep
         uses: Azure/cli@1.0.4
         with:
           inlineScript: |
+            export ACR_ROLE=$(az role definition list --name 'AcrPull' | jq -r .[].id)
             az deployment sub create --location $LOCATION --template-file $GITHUB_WORKSPACE/aks-private/main.bicep \
-              --parameter @$GITHUB_WORKSPACE/aks-private/parameters.json --parameter adminPassword=${{ secrets.VM_PASSWORD }}
+              --parameter @$GITHUB_WORKSPACE/aks-private/parameters.json --parameter adminPassword=${{ secrets.VM_PASSWORD }} \
+              --parameter acrRole=$ACR_ROLE
         

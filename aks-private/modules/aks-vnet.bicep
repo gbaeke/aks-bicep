@@ -68,7 +68,9 @@ resource vnet 'Microsoft.Network/virtualNetworks@2020-11-01' = {
         name: 'mgmt'
         properties:{
           addressPrefix: mgmtSubnetPrefix
+          privateEndpointNetworkPolicies: 'Disabled'
         }
+        
       }
     ]
     
@@ -81,3 +83,4 @@ output bastionSubnetId string = resourceId('Microsoft.Network/virtualNetworks/su
 output mgmtSubnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, 'mgmt')
 output aksSubnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, 'aks')
 output fwSubnetId string = resourceId('Microsoft.Network/virtualNetworks/subnets', vnetName, 'AzureFirewallSubnet')
+output Id string = vnet.id

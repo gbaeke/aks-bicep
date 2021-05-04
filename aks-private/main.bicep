@@ -126,14 +126,15 @@ var networkRuleCollections = [
 ]
 
 // acr parameters
-/* @allowed([
+@allowed([
   'Basic'
   'Standard'
   'Premium'
 ])
-param acrSku string = 'Basic'
+param acrSku string = 'Premium'
+param acrName string = 'gebaaksacr'
 param acrAdminUserEnabled bool = true
-param acrRole string */
+param acrRole string
 
 // create resource group
 resource rg 'Microsoft.Resources/resourceGroups@2021-01-01' = {
@@ -187,6 +188,9 @@ module fw 'modules/azfw.bicep' = {
 
 module aks 'modules/aks-cluster.bicep' = {
   name: aksClusterName
+  dependsOn: [
+    fw
+  ]
   scope: rg
   params: {    
     aksClusterName: aksClusterName
@@ -221,5 +225,19 @@ module aks 'modules/aks-cluster.bicep' = {
       type: 'VirtualMachineScaleSets'
       mode: 'System'
     }    
+  }
+}
+
+module acr 'modules/acr.bicep' = {
+  name: acrName
+  scope: rg
+  params:{
+    acrName: acrName
+    acrSku: acrSku
+    acrAdminUserEnabled: true
+    acrRole: acrRole
+    principalId: aks.outputs.identity
+    acrSubnet: vnet.outputs.mgmtSubnetId
+    vnetId: vnet.outputs.Id
   }
 }

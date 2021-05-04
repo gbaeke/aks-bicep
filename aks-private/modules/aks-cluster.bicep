@@ -35,7 +35,6 @@ param defaultNodePool object = {
   orchestratorVersion: null
 }
 
-
 // https://docs.microsoft.com/en-us/azure/templates/microsoft.operationalinsights/2020-03-01-preview/workspaces?tabs=json
 resource aksAzureMonitor 'Microsoft.OperationalInsights/workspaces@2020-03-01-preview' = {
   name: '${aksClusterName}-logA'

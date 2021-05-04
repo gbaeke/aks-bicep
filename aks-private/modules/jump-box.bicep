@@ -9,10 +9,13 @@ packages:
  - procps
  - file
  - linuxbrew-wrapper
+ - docker.io
 
 runcmd:
  - curl -sL https://aka.ms/InstallAzureCLIDeb | bash
  - az aks install-cli
+ - systemctl start docker
+ - systemctl enable docker
  
 final_message: "cloud init was here"
 
