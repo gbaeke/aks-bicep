@@ -52,7 +52,7 @@ resource aksAzureMonitor 'Microsoft.OperationalInsights/workspaces@2020-03-01-pr
 }
 
 // https://docs.microsoft.com/en-us/azure/templates/microsoft.containerservice/managedclusters?tabs=json#ManagedClusterAgentPoolProfile
-resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
+resource aks 'Microsoft.ContainerService/managedClusters@2021-05-01' = {
   name: aksClusterName
   location: resourceGroup().location
   identity: {
@@ -109,6 +109,9 @@ resource aks 'Microsoft.ContainerService/managedClusters@2021-02-01' = {
 
     apiServerAccessProfile: {
       enablePrivateCluster: true
+      privateDNSZone: 'none'
+      enablePrivateClusterPublicFQDN: true
+      
     }
     
     agentPoolProfiles: [

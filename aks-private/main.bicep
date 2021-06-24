@@ -25,7 +25,7 @@ param adminPassword string
 // aks parameters
 param aksClusterName string = 'aks-cluster'
 param k8sVersion string = '1.19.7'
-param adminUsername string = 'azureuser'
+//param adminUsername string = 'azureuser'
 param adminPublicKey string
 param adminGroupObjectIDs array = []
 @allowed([
@@ -70,7 +70,8 @@ var applicationRuleCollections = [
             }
           ]
           targetFqdns: [
-            '*.hcp.${rg.location}.azmk8s.io'
+            //'*.hcp.${rg.location}.azmk8s.io'
+            '*.hcp.westeurope.azmk8s.io'
             'mcr.microsoft.com'
             '*.cdn.mcr.io'
             '*.data.mcr.microsoft.com'
@@ -234,7 +235,7 @@ module acr 'modules/acr.bicep' = {
   params:{
     acrName: acrName
     acrSku: acrSku
-    acrAdminUserEnabled: true
+    acrAdminUserEnabled: acrAdminUserEnabled
     acrRole: acrRole
     principalId: aks.outputs.identity
     acrSubnet: vnet.outputs.mgmtSubnetId
